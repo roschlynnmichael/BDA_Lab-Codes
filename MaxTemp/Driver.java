@@ -1,27 +1,28 @@
 package hadoop_maxtemp;
 
-import java.io.IOException;
-
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.io.*;
-import org.apache.hadoop.mapred.*;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import java.io.IOException;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-public class Maxtemp_driver{
-	public static void main(String args[]) throws IOException{
+public class Maxtemp_driver {
+	public static void main(String args[]) throws Exception, IOException {
 		if(args.length!=2) {
-			System.out.println("Invalid Args");
+			System.out.println("Invalid Arguments");
 			System.exit(-1);
 		}
-		JobConf conf = new JobConf(Maxtemp_driver.class);
-		conf.setJobName("Finding Max Temp");
-		conf.setMapperClass(Maxtemp_mapper.class);
-		conf.setReducerClass(Maxtemp_reducer.class);
-		conf.setOutputKeyClass(Text.class);
-		conf.setOutputValueClass(IntWritable.class);
-		FileInputFormat.addInputPath(conf, new Path(args[0]));
-		FileOutputFormat.setOutputPath(conf, new Path(args[1]));
-		conf.setNumMapTasks(5);
-		conf.setNumReduceTasks(5);
-		JobClient.runJob(conf);
+		Configuration conf = new Configuration();
+		Job job =  new Job(conf , "Maxtemp_driver");
+		job.setJarByClass(Maxtemp_driver.class);
+		job.setMapperClass(Maxtemp_mapper.class);
+		job.setReducerClass(Maxtemp_reducer.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(Text.class);
+		FileInputFormat.setInputPaths(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		job.waitForCompletion(true);
 	}
 }
